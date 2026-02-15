@@ -1,74 +1,32 @@
-"""
-Gemini API 単体テスト
-
-使用方法:
-1. .env ファイルに GEMINI_API_KEY を設定
-2. python test_gemini.py を実行
-"""
-import os
+"""Gemini API補正機能のテスト"""
+import pytest
 from config.settings import config
 from model.gemini import correct_with_gemini
 
 
-def test_gemini():
-    """Gemini API の補正機能をテスト"""
+pytestmark = pytest.mark.skipif(
+    not config.gemini_api_key,
+    reason="GEMINI_API_KEY が設定されていません",
+)
 
-    print("=" * 60)
-    print("Gemini API 単体テスト")
-    print("=" * 60)
 
-    # 設定確認
-    print(f"\n📋 設定:")
-    print(f"  GEMINI_MODEL    : {config.gemini_model}")
-    print(f"  GEMINI_API_KEY  : {'設定済み' if config.gemini_api_key else '未設定'}")
-    print(f"  補正機能        : {'有効' if config.gemini_enabled else '無効'}")
-
-    if not config.gemini_api_key:
-        print("\n❌ エラー: GEMINI_API_KEY が設定されていません")
-        print("   .env ファイルに GEMINI_API_KEY を設定してください")
-        return
-
-    # テストケース
-    test_cases = [
+@pytest.mark.parametrize(
+    "input_text, expected_keywords",
+    [
         ("ぱいそんでじぇそんをぱーすする", ["Python", "JSON"]),
         ("りあくとのゆーずえふぇくとふっくをつかう", ["React", "useEffect"]),
         ("どっかーこんてなをきどうする", ["Docker"]),
         ("じっと こみっと でへんこうをほぞんする", ["git", "commit"]),
-    ]
-
-    print(f"\n🧪 テスト実行:")
-    print("-" * 60)
-
-    passed = 0
-    failed = 0
-
-    for i, (input_text, expected_keywords) in enumerate(test_cases, 1):
-        print(f"\n[テスト {i}/{len(test_cases)}]")
-        print(f"入力: {input_text}")
-
-        try:
-            output = correct_with_gemini(input_text)
-            print(f"出力: {output}")
-
-            # キーワードチェック
-            missing = [kw for kw in expected_keywords if kw not in output]
-
-            if not missing:
-                print(f"✅ PASS: すべてのキーワード ({', '.join(expected_keywords)}) を含む")
-                passed += 1
-            else:
-                print(f"❌ FAIL: 以下のキーワードが含まれていません: {', '.join(missing)}")
-                failed += 1
-
-        except Exception as e:
-            print(f"❌ FAIL: エラーが発生しました: {e}")
-            failed += 1
-
-    # 結果サマリー
-    print("\n" + "=" * 60)
-    print(f"テスト結果: {passed} PASS / {failed} FAIL")
-    print("=" * 60)
+    ],
+)
+def test_correct_with_gemini(input_text: str, expected_keywords: list[str]) -> None:
+    """Geminiがプログラミング用語を正しく補正するか"""
+    result = correct_with_gemini(input_text)
+    for keyword in expected_keywords:
+        assert keyword in result, f"'{keyword}' が結果に含まれていない: {result}"
 
 
-if __name__ == "__main__":
-    test_gemini()
+def test_empty_input() -> None:
+    """空文字列はそのまま返す"""
+    assert correct_with_gemini("") == ""
+    assert correct_with_gemini("   ") == "   "
