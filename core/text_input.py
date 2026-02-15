@@ -2,7 +2,12 @@
 テキスト入力処理
 """
 import time
-import Quartz
+from Quartz.CoreGraphics import (
+    CGEventCreateKeyboardEvent,
+    CGEventKeyboardSetUnicodeString,
+    CGEventPost,
+    kCGHIDEventTap,
+)
 
 
 def type_text(text: str) -> None:
@@ -19,13 +24,13 @@ def type_text(text: str) -> None:
 
     for char in text:
         # キーダウンイベント
-        event_down = Quartz.CGEventCreateKeyboardEvent(None, 0, True)
-        Quartz.CGEventKeyboardSetUnicodeString(event_down, len(char), char)
-        Quartz.CGEventPost(Quartz.kCGHIDEventTap, event_down)
+        event_down = CGEventCreateKeyboardEvent(None, 0, True)
+        CGEventKeyboardSetUnicodeString(event_down, len(char), char)
+        CGEventPost(kCGHIDEventTap, event_down)
 
         # キーアップイベント
-        event_up = Quartz.CGEventCreateKeyboardEvent(None, 0, False)
-        Quartz.CGEventKeyboardSetUnicodeString(event_up, len(char), char)
-        Quartz.CGEventPost(Quartz.kCGHIDEventTap, event_up)
+        event_up = CGEventCreateKeyboardEvent(None, 0, False)
+        CGEventKeyboardSetUnicodeString(event_up, len(char), char)
+        CGEventPost(kCGHIDEventTap, event_up)
 
         time.sleep(0.01)
