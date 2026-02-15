@@ -1,8 +1,13 @@
 """
 アプリケーション設定
 """
+import os
 from pydantic import BaseModel, Field, field_validator
 from pynput.keyboard import Key
+from dotenv import load_dotenv
+
+# 環境変数を読み込み
+load_dotenv()
 
 
 class AppConfig(BaseModel):
@@ -12,6 +17,27 @@ class AppConfig(BaseModel):
     whisper_model: str = Field(default="base", description="Whisperモデル")
     language: str = Field(default="ja", description="言語")
     min_duration: float = Field(default=0.3, ge=0.1, description="最小録音時間（秒）")
+
+    # Gemini API 設定
+    gemini_api_key: str = Field(
+        default_factory=lambda: os.getenv("GEMINI_API_KEY", ""),
+        description="Gemini API キー"
+    )
+    gemini_model: str = Field(
+        default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.0-flash-exp"),
+        description="使用するGeminiモデル"
+    )
+    gemini_timeout: int = Field(
+        default=5,
+        ge=1,
+        le=30,
+        description="APIタイムアウト時間（秒）"
+    )
+
+    @property
+    def gemini_enabled(self) -> bool:
+        """Gemini補正機能の有効/無効（APIキーが設定されていれば自動的に有効）"""
+        return bool(self.gemini_api_key)
 
     @field_validator("whisper_model")
     @classmethod

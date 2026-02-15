@@ -36,6 +36,13 @@ def main() -> None:
     print(f"  サンプルレート: {config.sample_rate}Hz")
     print("=" * 50)
 
+    # Gemini設定のチェック
+    if config.gemini_enabled:
+        print(f"\n  Gemini補正  : 有効 ({config.gemini_model})\n")
+    else:
+        print("\n  Gemini補正  : 無効")
+        print("   → .env に GEMINI_API_KEY を設定すると有効化されます\n")
+
     # モデルを事前ロード
     get_model()
 

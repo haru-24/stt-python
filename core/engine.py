@@ -10,6 +10,7 @@ import sounddevice as sd
 
 from config.settings import config
 from model.whisper import get_model
+from model.gemini import correct_with_gemini
 from ui.feedback import play_sound
 from core.audio import create_audio_stream
 from core.text_input import type_text
@@ -94,6 +95,10 @@ class VoiceInputEngine:
                 vad_filter=True,  # 無音部分をフィルタ
             )
             text = "".join(seg.text for seg in segments).strip()
+
+            # Gemini補正（有効な場合）
+            if config.gemini_enabled and text:
+                text = correct_with_gemini(text)
 
             if text:
                 print(f"📝 {text}")

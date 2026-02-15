@@ -4,3 +4,6 @@ numpy
 pynput
 rumps
 pyobjc-framework-Cocoa
+pydantic
+python-dotenv
+google-generativeai
