@@ -7,3 +7,4 @@ pyobjc-framework-Cocoa
 pydantic
 python-dotenv
 google-generativeai
+pyobjc-framework-Quartz

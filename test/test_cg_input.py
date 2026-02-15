@@ -1,22 +1,13 @@
 """
-テキスト入力処理
+CoreGraphics APIを使ったUnicodeテキスト直接入力テスト
+クリップボードを使わない方法
 """
 import time
 import Quartz
 
 
-def type_text(text: str) -> None:
-    """
-    テキストをアクティブウィンドウに直接入力。
-    CoreGraphics APIでUnicodeキーイベントを送信。
-    クリップボードを使用しない。
-    """
-    if not text:
-        return
-
-    # 少し待ってから入力（フォーカス安定のため）
-    time.sleep(0.1)
-
+def type_unicode(text: str) -> None:
+    """CoreGraphics APIでUnicodeテキストを直接入力"""
     for char in text:
         # キーダウンイベント
         event_down = Quartz.CGEventCreateKeyboardEvent(None, 0, True)
@@ -29,3 +20,13 @@ def type_text(text: str) -> None:
         Quartz.CGEventPost(Quartz.kCGHIDEventTap, event_up)
 
         time.sleep(0.01)
+
+
+print("5秒後に日本語テキストを直接入力します...")
+print("ターミナルをアクティブにしてください")
+time.sleep(5)
+
+test_text = "PythonでJSONをパースする"
+print(f"\n入力中: {test_text}")
+type_unicode(test_text)
+print("\n\n完了！")

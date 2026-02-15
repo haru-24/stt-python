@@ -16,12 +16,10 @@ def get_model() -> Any:
     if _model is None:
         with _model_lock:
             if _model is None:
-                print(f"🔄 Whisperモデル ({config.whisper_model}) をロード中...")
                 from faster_whisper import WhisperModel
                 _model = WhisperModel(
                     config.whisper_model,
                     device="cpu",       # Apple Silicon: "auto" でも可
                     compute_type="int8" # CPU向け最適化
                 )
-                print("✅ モデルロード完了")
     return _model

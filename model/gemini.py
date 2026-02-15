@@ -51,7 +51,6 @@ def correct_with_gemini(text: str) -> str:
         return text
 
     if not config.gemini_api_key:
-        print("⚠️ GEMINI_API_KEY が設定されていません")
         return text
 
     try:
@@ -91,10 +90,8 @@ Whisperで生成された日本語テキストを、技術用語を正確に表�
         if response.text:
             corrected_text = response.text.strip()
             if corrected_text:
-                print(f"🔧 Gemini補正: 「{text}」→「{corrected_text}」")
                 return corrected_text
 
-        print(f"⚠️ Gemini APIから空のレスポンス（元のテキストを使用）")
         return text
 
     except Exception as e:

@@ -42,8 +42,6 @@ class VoiceInputEngine:
         play_sound("Tink")  # 録音開始音
         if self.app:
             self.app.set_recording()
-        else:
-            print("🔴 録音中...")
 
         self.stream = create_audio_stream(self.audio_chunks)
         self.stream.start()
@@ -71,7 +69,6 @@ class VoiceInputEngine:
         duration = len(audio) / config.sample_rate
 
         if duration < config.min_duration:
-            print(f"⏭️ 短すぎる録音 ({duration:.1f}s) → スキップ")
             if self.app:
                 self.app.set_idle()
             return
@@ -83,8 +80,6 @@ class VoiceInputEngine:
         """音声を文字起こしして入力"""
         if self.app:
             self.app.set_processing()
-        else:
-            print("⏳ 変換中...")
 
         try:
             model = get_model()
@@ -101,12 +96,9 @@ class VoiceInputEngine:
                 text = correct_with_gemini(text)
 
             if text:
-                print(f"📝 {text}")
-                # 少し待ってからタイプ（フォーカス安定のため）
+                print(f"{text}")
                 time.sleep(0.1)
                 type_text(text)
-            else:
-                print("🔇 音声が検出されませんでした")
 
         except Exception as e:
             print(f"❌ エラー: {e}")
