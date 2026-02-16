@@ -128,7 +128,7 @@ class VoiceInputEngine:
             status: sd.CallbackFlags,
         ) -> None:
             if status:
-                print(f"Audio: {status}")
+                logger.warning(f"Audio: {status}")
             self.audio_chunks.append(indata.copy())
 
         return sd.InputStream(
@@ -146,6 +146,7 @@ class VoiceInputEngine:
             self.is_recording = True
             self.audio_chunks = []
 
+        logger.info("🎙️ 録音開始")
         _play_sound("Tink")
         if self.app:
             self.app.set_recording()
@@ -191,18 +192,21 @@ class VoiceInputEngine:
 
         try:
             text = self.whisper.transcribe(audio)
-            print(f"[STT] {text}")
+            logger.info(f"[STT] {text}")
 
             if self.gemini.enabled and text:
-                text = self.gemini.correct(text)
+                corrected = self.gemini.correct(text)
+                if corrected != text:
+                    logger.info(f"[Gemini補正] {text} → {corrected}")
+                text = corrected
 
             if text:
-                print(f"{text}")
+                logger.info(f"[入力] {text}")
                 time.sleep(0.1)
                 type_text(text)
 
         except Exception as e:
-            print(f"エラー: {e}")
+            logger.error(f"エラー: {e}")
             if self.app:
                 self.app.set_error(str(e)[:30])
                 time.sleep(2)
