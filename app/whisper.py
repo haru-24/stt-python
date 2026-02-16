@@ -27,11 +27,13 @@ class WhisperTranscriber:
             with self._lock:
                 if self._model is None:
                     from faster_whisper import WhisperModel
+                    print(f"[Whisper] モデル '{config.whisper_model}' をダウンロード中...")
                     self._model = WhisperModel(
                         config.whisper_model,
                         device="cpu",
-                        compute_type="int8",
+                        compute_type=config.whisper_compute_type,
                     )
+                    print(f"[Whisper] モデル '{config.whisper_model}' のロード完了")
         return self._model
 
     def transcribe(self, audio: npt.NDArray[np.float32]) -> str:
@@ -42,5 +44,10 @@ class WhisperTranscriber:
             language=config.language,
             beam_size=5,
             vad_filter=True,
+            vad_parameters=dict(
+                min_silence_duration_ms=300,
+                speech_pad_ms=200,
+            ),
+            initial_prompt=config.whisper_initial_prompt,
         )
         return "".join(seg.text for seg in segments).strip()
