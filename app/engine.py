@@ -53,7 +53,10 @@ logger.addHandler(console_handler)
 
 
 def _play_sound(name: str = "Tink") -> None:
-    """macOS標準サウンドを再生"""
+    """macOS標準サウンドを再生（設定によって制御）"""
+    if not config.sound_enabled:
+        return
+
     try:
         subprocess.Popen(
             ["afplay", f"/System/Library/Sounds/{name}.aiff"],

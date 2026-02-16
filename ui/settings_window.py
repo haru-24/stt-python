@@ -68,12 +68,11 @@ class SettingsDialog(QDialog):
 
         # 説明
         description = QLabel(
-            "音声認識結果を補正するためのプロンプトを編集できます\n"
-            "{text} の部分に音声認識結果が挿入されます"
+            "音声認識結果を補正するためのプロンプトを編集できます。{text} の部分に音声認識結果が挿入されます。"
         )
         description.setFont(QFont("Helvetica", 11))
-        description.setAlignment(Qt.AlignmentFlag.AlignCenter)
         description.setStyleSheet("color: gray;")
+        description.setWordWrap(True)
         layout.addWidget(description)
 
         # 区切り線

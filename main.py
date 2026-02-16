@@ -33,6 +33,7 @@ try:
     class VoiceInputApp(rumps.App):
         """メニューバーUI"""
         _status_item: rumps.MenuItem
+        _sound_item: rumps.MenuItem
 
         def __init__(self) -> None:
             super().__init__("🥷🏻", quit_button="終了")
@@ -43,6 +44,10 @@ try:
             else:
                 backend_info = f"STT: Whisper ({config.whisper_model})"
 
+            # サウンド設定メニュー項目
+            self._sound_item = rumps.MenuItem("🔊 サウンド", callback=self.toggle_sound)
+            self._sound_item.state = config.sound_enabled
+
             # 設定ウィンドウのインスタンス
             self._settings_window = SettingsWindow()
 
@@ -51,6 +56,7 @@ try:
                 None,
                 rumps.MenuItem(backend_info),
                 None,
+                self._sound_item,
                 rumps.MenuItem("設定", callback=self.open_settings),
             ]
 
@@ -69,6 +75,14 @@ try:
         def set_error(self, msg: str) -> None:
             self.title = "⚠️"
             self._status_item.title = f"⚠️ {msg}"
+
+        def toggle_sound(self, sender: rumps.MenuItem) -> None:
+            """サウンドのON/OFFを切り替え"""
+            new_state = not sender.state
+            sender.state = new_state
+            config.save_sound_setting(new_state)
+            status = "有効" if new_state else "無効"
+            print(f"[設定] サウンド再生を{status}にしました")
 
         def open_settings(self, _) -> None:
             """設定ウィンドウを開く"""

@@ -76,6 +76,13 @@ class AppConfig(BaseModel):
     )
     gemini_prompt: str = Field(default="", description="Gemini補正プロンプト")
 
+    # サウンド設定
+    sound_enabled: bool = Field(default=True, description="サウンド再生の有効/無効")
+    settings_file: Path = Field(
+        default=Path(__file__).parent.parent / "config" / "settings.json",
+        description="設定ファイルパス"
+    )
+
     # プライベート属性
     _lock: threading.Lock = PrivateAttr(default_factory=threading.Lock)
 
@@ -103,6 +110,7 @@ class AppConfig(BaseModel):
     def model_post_init(self, _context) -> None:
         """モデル初期化後の処理"""
         self._load_prompt()
+        self._load_settings()
 
     def _load_prompt(self) -> None:
         """プロンプトをJSONから読み込み、なければデフォルトを保存"""
@@ -154,6 +162,37 @@ class AppConfig(BaseModel):
 
             self.save_prompt(default)
             return default
+
+    def _load_settings(self) -> None:
+        """設定をJSONから読み込み、なければデフォルトを保存"""
+        if not self.settings_file.exists():
+            self.settings_file.parent.mkdir(parents=True, exist_ok=True)
+            self._save_settings()
+            return
+
+        try:
+            with open(self.settings_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                self.sound_enabled = data.get("sound_enabled", True)
+        except (json.JSONDecodeError, IOError) as e:
+            print(f"[設定] settings.json読み込みエラー: {e}")
+            self.sound_enabled = True
+            self._save_settings()
+
+    def _save_settings(self) -> None:
+        """設定をJSONに保存"""
+        data = {
+            "sound_enabled": self.sound_enabled,
+            "version": "1.0"
+        }
+        with open(self.settings_file, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+
+    def save_sound_setting(self, enabled: bool) -> None:
+        """サウンド設定を保存（スレッドセーフ）"""
+        with self._lock:
+            self.sound_enabled = enabled
+            self._save_settings()
 
     class Config:
         arbitrary_types_allowed = True
