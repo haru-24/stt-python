@@ -147,7 +147,7 @@ class VoiceInputEngine:
             self.audio_chunks = []
 
         logger.info("🎙️ 録音開始")
-        _play_sound("Tink")
+        _play_sound("Frog")
         if self.app:
             self.app.set_recording()
 
@@ -166,7 +166,7 @@ class VoiceInputEngine:
             self.stream.close()
             self.stream = None
 
-        _play_sound("Pop")
+        _play_sound("Sosumi")
 
         if not self.audio_chunks:
             if self.app:
