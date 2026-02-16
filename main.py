@@ -21,6 +21,7 @@ import time
 
 from app.config import config
 from app.whisper import WhisperTranscriber
+from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
 from app.engine import VoiceInputEngine
 
@@ -35,10 +36,15 @@ try:
         def __init__(self) -> None:
             super().__init__("🥷🏻", quit_button="終了")
             self._status_item = rumps.MenuItem("待機中...")
+            # STTバックエンド表示
+            if config.stt_backend == "google":
+                backend_info = f"STT: Google Speech ({config.language})"
+            else:
+                backend_info = f"STT: Whisper ({config.whisper_model})"
             self.menu = [
                 self._status_item,
                 None,
-                rumps.MenuItem("モデル: " + config.whisper_model),
+                rumps.MenuItem(backend_info),
             ]
 
         def set_recording(self) -> None:
@@ -66,17 +72,24 @@ except ImportError:
 
 def main() -> None:
     """メイン関数"""
-    whisper = WhisperTranscriber()
-    whisper.load()
+    # STTバックエンドの選択
+    if config.stt_backend == "google":
+        print(f"[STT] Google Speech Recognition を使用")
+        transcriber = GoogleSpeechTranscriber()
+    else:
+        print(f"[STT] Whisper ({config.whisper_model}) を使用")
+        transcriber = WhisperTranscriber()
+
+    transcriber.load()
     gemini = GeminiCorrector()
 
     if HAS_RUMPS:
         app = VoiceInputApp()
-        engine = VoiceInputEngine(whisper, gemini, app=app)
+        engine = VoiceInputEngine(transcriber, gemini, app=app)
         engine.start_keyboard_listener()
         app.run()
     else:
-        engine = VoiceInputEngine(whisper, gemini)
+        engine = VoiceInputEngine(transcriber, gemini)
         engine.start_keyboard_listener()
 
         try:

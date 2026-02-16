@@ -162,7 +162,7 @@ class VoiceInputEngine:
 
         try:
             text = self.whisper.transcribe(audio)
-            print(f"[Whisper] {text}")
+            print(f"[STT] {text}")
 
             if self.gemini.enabled and text:
                 text = self.gemini.correct(text)

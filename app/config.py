@@ -14,12 +14,21 @@ class AppConfig(BaseModel):
     """アプリケーション設定"""
     hotkey: Key = Field(default=Key.cmd_r, description="録音用ホットキー")
     sample_rate: int = Field(default=16000, ge=8000, le=48000, description="サンプリングレート")
+
+    # STT バックエンド設定
+    stt_backend: str = Field(
+        default_factory=lambda: os.getenv("STT_BACKEND", "whisper"),
+        description="STTバックエンド (whisper|google)"
+    )
+
+    # Whisper 設定
     whisper_model: str = Field(default="medium", description="Whisperモデル")
     whisper_compute_type: str = Field(default="float32", description="Whisper計算精度")
     whisper_initial_prompt: str = Field(
         default="Python、JavaScript、TypeScript、Docker、Git、SSH、API、JSON、React、Vue、Node.js、AWS、GitHub、VS Code",
         description="Whisperの認識ヒント用プロンプト",
     )
+
     language: str = Field(default="ja", description="言語")
     min_duration: float = Field(default=0.3, ge=0.1, description="最小録音時間（秒）")
 
@@ -43,6 +52,14 @@ class AppConfig(BaseModel):
     def gemini_enabled(self) -> bool:
         """Gemini補正機能の有効/無効（APIキーが設定されていれば自動的に有効）"""
         return bool(self.gemini_api_key)
+
+    @field_validator("stt_backend")
+    @classmethod
+    def validate_stt_backend(cls, v: str) -> str:
+        valid_backends = ["whisper", "google"]
+        if v not in valid_backends:
+            raise ValueError(f"STTバックエンドは {valid_backends} のいずれかである必要があります")
+        return v
 
     @field_validator("whisper_model")
     @classmethod

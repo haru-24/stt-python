@@ -27,13 +27,13 @@ class WhisperTranscriber:
             with self._lock:
                 if self._model is None:
                     from faster_whisper import WhisperModel
-                    print(f"[Whisper] モデル '{config.whisper_model}' をダウンロード中...")
+                    print(f"[STT] モデル '{config.whisper_model}' をダウンロード中...")
                     self._model = WhisperModel(
                         config.whisper_model,
                         device="cpu",
                         compute_type=config.whisper_compute_type,
                     )
-                    print(f"[Whisper] モデル '{config.whisper_model}' のロード完了")
+                    print(f"[STT] モデル '{config.whisper_model}' のロード完了")
         return self._model
 
     def transcribe(self, audio: npt.NDArray[np.float32]) -> str:

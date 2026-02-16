@@ -9,3 +9,4 @@ python-dotenv
 google-generativeai
 pyobjc-framework-Quartz
 google-genai
+SpeechRecognition
