@@ -24,6 +24,7 @@ from app.whisper import WhisperTranscriber
 from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
 from app.engine import VoiceInputEngine
+from app.settings import SettingsWindow
 
 # rumpsのインポート試行
 try:
@@ -41,10 +42,16 @@ try:
                 backend_info = f"STT: Google Speech ({config.language})"
             else:
                 backend_info = f"STT: Whisper ({config.whisper_model})"
+
+            # 設定ウィンドウのインスタンス
+            self._settings_window = SettingsWindow()
+
             self.menu = [
                 self._status_item,
                 None,
                 rumps.MenuItem(backend_info),
+                None,
+                rumps.MenuItem("設定", callback=self.open_settings),
             ]
 
         def set_recording(self) -> None:
@@ -62,6 +69,10 @@ try:
         def set_error(self, msg: str) -> None:
             self.title = "⚠️"
             self._status_item.title = f"⚠️ {msg}"
+
+        def open_settings(self, _) -> None:
+            """設定ウィンドウを開く"""
+            self._settings_window.show()
 
     HAS_RUMPS = True
 except ImportError:

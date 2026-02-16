@@ -1,9 +1,12 @@
 """
 音声入力エンジン（録音・文字起こし・テキスト入力の統合制御）
 """
+import logging
 import subprocess
 import threading
 import time
+from datetime import datetime
+from pathlib import Path
 from typing import Optional, List, Any, Union
 
 import numpy as np
@@ -20,7 +23,33 @@ from Quartz.CoreGraphics import (
 
 from app.config import config
 from app.whisper import WhisperTranscriber
+from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
+
+# ログディレクトリとファイル設定
+LOG_DIR = Path.home() / ".sst-python" / "logs"
+LOG_DIR.mkdir(parents=True, exist_ok=True)
+LOG_FILE = LOG_DIR / "voice_input.log"
+
+# ロガー設定
+logger = logging.getLogger("voice_input")
+logger.setLevel(logging.INFO)
+
+# ファイルハンドラ
+file_handler = logging.FileHandler(LOG_FILE, encoding="utf-8")
+file_handler.setLevel(logging.INFO)
+file_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+file_handler.setFormatter(file_formatter)
+
+# コンソールハンドラ
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_formatter = logging.Formatter("%(message)s")
+console_handler.setFormatter(console_formatter)
+
+# ハンドラを追加
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)
 
 
 def _play_sound(name: str = "Tink") -> None:
@@ -63,7 +92,7 @@ class VoiceInputEngine:
 
     def __init__(
         self,
-        whisper: WhisperTranscriber,
+        whisper: Union[WhisperTranscriber, GoogleSpeechTranscriber],
         gemini: GeminiCorrector,
         app: Optional[Any] = None,
     ) -> None:

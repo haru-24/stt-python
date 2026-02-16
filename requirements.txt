@@ -10,3 +10,4 @@ google-generativeai
 pyobjc-framework-Quartz
 google-genai
 SpeechRecognition
+PyQt6

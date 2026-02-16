@@ -1,0 +1,245 @@
+"""
+Geminiプロンプト設定ウィンドウ（PyQt6ベース）
+"""
+import sys
+import multiprocessing
+from typing import Optional
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QApplication,
+    QDialog,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QTextEdit,
+    QPushButton,
+    QMessageBox,
+    QFrame,
+)
+
+from app.config import config
+
+
+class SettingsDialog(QDialog):
+    """Geminiプロンプト設定ダイアログ"""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.setWindowTitle("Gemini補正プロンプト設定")
+        self.setMinimumSize(850, 650)
+        self._setup_ui()
+
+    def _setup_ui(self) -> None:
+        """UIをセットアップ"""
+        layout = QVBoxLayout()
+        layout.setSpacing(15)
+        layout.setContentsMargins(25, 25, 25, 25)
+
+        # ヘッダー
+        header = QLabel("🤖 Gemini 補正プロンプト設定")
+        header.setFont(QFont("Helvetica", 18, QFont.Weight.Bold))
+        header.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(header)
+
+        # 説明
+        description = QLabel(
+            "音声認識結果を補正するためのプロンプトを編集できます\n"
+            "{text} の部分に音声認識結果が挿入されます"
+        )
+        description.setFont(QFont("Helvetica", 11))
+        description.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        description.setStyleSheet("color: gray;")
+        layout.addWidget(description)
+
+        # 区切り線
+        line1 = QFrame()
+        line1.setFrameShape(QFrame.Shape.HLine)
+        line1.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(line1)
+
+        # テキストエリア
+        self.text_edit = QTextEdit()
+        self.text_edit.setPlainText(config.gemini_prompt)
+        self.text_edit.setFont(QFont("Monaco", 12))
+        self.text_edit.setMinimumHeight(350)
+        layout.addWidget(self.text_edit)
+
+        # ステータスラベル
+        self.status_label = QLabel("")
+        self.status_label.setFont(QFont("Helvetica", 10))
+        self.status_label.setStyleSheet("color: gray;")
+        self.status_label.setMinimumHeight(20)
+        layout.addWidget(self.status_label)
+
+        # 区切り線
+        line2 = QFrame()
+        line2.setFrameShape(QFrame.Shape.HLine)
+        line2.setFrameShadow(QFrame.Shadow.Sunken)
+        layout.addWidget(line2)
+
+        # ボタン群
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+
+        # キャンセルボタン
+        cancel_btn = QPushButton("✖️ キャンセル")
+        cancel_btn.setMinimumSize(140, 40)
+        cancel_btn.setFont(QFont("Helvetica", 12, QFont.Weight.Bold))
+        cancel_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #757575;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px;
+            }
+            QPushButton:hover {
+                background-color: #616161;
+            }
+            QPushButton:pressed {
+                background-color: #424242;
+            }
+        """
+        )
+        cancel_btn.clicked.connect(self.reject)
+        button_layout.addWidget(cancel_btn)
+
+        # デフォルトに戻すボタン
+        reset_btn = QPushButton("🔄 デフォルトに戻す")
+        reset_btn.setMinimumSize(180, 40)
+        reset_btn.setFont(QFont("Helvetica", 12, QFont.Weight.Bold))
+        reset_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #FF9800;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px;
+            }
+            QPushButton:hover {
+                background-color: #F57C00;
+            }
+            QPushButton:pressed {
+                background-color: #E65100;
+            }
+        """
+        )
+        reset_btn.clicked.connect(self._on_reset)
+        button_layout.addWidget(reset_btn)
+
+        # 保存ボタン
+        save_btn = QPushButton("💾 保存")
+        save_btn.setMinimumSize(140, 40)
+        save_btn.setFont(QFont("Helvetica", 12, QFont.Weight.Bold))
+        save_btn.setStyleSheet(
+            """
+            QPushButton {
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                padding: 8px;
+            }
+            QPushButton:hover {
+                background-color: #45a049;
+            }
+            QPushButton:pressed {
+                background-color: #388E3C;
+            }
+        """
+        )
+        save_btn.clicked.connect(self._on_save)
+        button_layout.addWidget(save_btn)
+
+        layout.addLayout(button_layout)
+        self.setLayout(layout)
+
+    def _on_save(self) -> None:
+        """保存ボタンのコールバック"""
+        new_prompt = self.text_edit.toPlainText().strip()
+
+        if not new_prompt:
+            self.status_label.setText("❌ エラー: プロンプトを入力してください")
+            self.status_label.setStyleSheet("color: red;")
+            return
+
+        if "{text}" not in new_prompt:
+            # 警告ダイアログ
+            reply = QMessageBox.question(
+                self,
+                "警告",
+                "プロンプトに {text} が含まれていません。\n"
+                "音声認識結果が挿入されない可能性があります。\n\n"
+                "保存しますか？",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+
+        try:
+            config.save_prompt(new_prompt)
+            self.status_label.setText(
+                "✅ プロンプトを保存しました。次回の音声入力から反映されます。"
+            )
+            self.status_label.setStyleSheet("color: #4CAF50;")
+        except Exception as ex:
+            self.status_label.setText(f"❌ エラー: 保存に失敗しました: {ex}")
+            self.status_label.setStyleSheet("color: red;")
+
+    def _on_reset(self) -> None:
+        """デフォルトに戻すボタンのコールバック"""
+        reply = QMessageBox.question(
+            self,
+            "確認",
+            "プロンプトをデフォルトに戻しますか？\n\n" "現在の内容は失われます。",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No,
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            try:
+                default_prompt = config.reset_prompt_to_default()
+                self.text_edit.setPlainText(default_prompt)
+                self.status_label.setText("✅ デフォルトプロンプトに戻しました")
+                self.status_label.setStyleSheet("color: #4CAF50;")
+            except Exception as ex:
+                self.status_label.setText(f"❌ エラー: リセットに失敗しました: {ex}")
+                self.status_label.setStyleSheet("color: red;")
+
+
+class SettingsWindow:
+    """設定ウィンドウ管理クラス"""
+
+    def __init__(self) -> None:
+        self._window_process: Optional[multiprocessing.Process] = None
+        self._is_open: bool = False
+
+    def show(self) -> None:
+        """設定ウィンドウを表示（既に開いている場合は無視）"""
+        if self._is_open and self._window_process and self._window_process.is_alive():
+            print("[設定] ウィンドウは既に開いています")
+            return
+
+        self._is_open = True
+        # 別プロセスでGUIを実行
+        self._window_process = multiprocessing.Process(
+            target=_run_settings_window, daemon=True
+        )
+        self._window_process.start()
+
+
+def _run_settings_window() -> None:
+    """PyQt6ウィンドウを実行（別プロセス用）"""
+    app = QApplication(sys.argv)
+    dialog = SettingsDialog()
+    dialog.exec()
+    sys.exit()
+
+
+# グローバルインスタンス
+settings_window = SettingsWindow()

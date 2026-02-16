@@ -41,24 +41,8 @@ class GeminiCorrector:
 
             client = self._get_client()
 
-            prompt = f"""あなたはプログラミング用AIチャット向けの音声認識テキスト補正アシスタントです。
-Whisperで生成された日本語テキストを、技術用語を正確に表記しながら自然な日本語に補正してください。
-
-補正ルール:
-1. プログラミング用語は正式な英語表記に変換（例：「ぱいそん」→「Python」）
-2. 略語や頭字語は大文字表記（例：「えすえすえいち」→「SSH」）
-3. 技術用語以外の日本語は自然な表記に修正
-4. 元の意図を保ちながら、過度な補正は避ける
-5. 補正後のテキストのみを出力し、引用符や説明は一切含めないこと
-
-補正例：
-「ぱいそんでじぇそんをぱーすする」→ PythonでJSONをパースする
-「りあくとのゆーずえふぇくとふっくをつかう」→ ReactのuseEffectフックを使う
-「どっかーこんてなをきどうしてえすえすえいちでせつぞくする」→ DockerコンテナをきどうしてSSHで接続する
-「じっと こみっと でへんこうをほぞんする」→ git commitで変更を保存する
-
-以下のテキストを補正してください。補正後のテキストのみを出力してください：
-{text}"""
+            # configから動的にプロンプトを取得
+            prompt = config.gemini_prompt.replace("{text}", text)
 
             response = client.models.generate_content(
                 model=config.gemini_model,
