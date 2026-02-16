@@ -18,25 +18,66 @@ macOSの設定:
 """
 
 import time
-from model.whisper import get_model
-from ui.menu_bar import VoiceInputApp, HAS_RUMPS
-from core.engine import VoiceInputEngine
-from core.keyboard import run_keyboard_listener
+
+from app.config import config
+from app.whisper import WhisperTranscriber
+from app.gemini import GeminiCorrector
+from app.engine import VoiceInputEngine
+
+# rumpsのインポート試行
+try:
+    import rumps
+
+    class VoiceInputApp(rumps.App):
+        """メニューバーUI"""
+        _status_item: rumps.MenuItem
+
+        def __init__(self) -> None:
+            super().__init__("🥷🏻", quit_button="終了")
+            self._status_item = rumps.MenuItem("待機中...")
+            self.menu = [
+                self._status_item,
+                None,
+                rumps.MenuItem("モデル: " + config.whisper_model),
+            ]
+
+        def set_recording(self) -> None:
+            self.title = "🗣️"
+            self._status_item.title = "🗣️ 録音中..."
+
+        def set_processing(self) -> None:
+            self.title = "👨🏻‍💻"
+            self._status_item.title = "👨🏻‍💻 変換中..."
+
+        def set_idle(self) -> None:
+            self.title = "🥷🏻"
+            self._status_item.title = "待機中..."
+
+        def set_error(self, msg: str) -> None:
+            self.title = "⚠️"
+            self._status_item.title = f"⚠️ {msg}"
+
+    HAS_RUMPS = True
+except ImportError:
+    HAS_RUMPS = False
+    VoiceInputApp = None  # type: ignore
+    print("rumps未インストール。メニューバーUIなしで動作します。")
 
 
 def main() -> None:
     """メイン関数"""
-    # モデルを事前ロード
-    get_model()
+    whisper = WhisperTranscriber()
+    whisper.load()
+    gemini = GeminiCorrector()
 
     if HAS_RUMPS:
         app = VoiceInputApp()
-        engine = VoiceInputEngine(app=app)
-        run_keyboard_listener(engine)
+        engine = VoiceInputEngine(whisper, gemini, app=app)
+        engine.start_keyboard_listener()
         app.run()
     else:
-        engine = VoiceInputEngine()
-        run_keyboard_listener(engine)
+        engine = VoiceInputEngine(whisper, gemini)
+        engine.start_keyboard_listener()
 
         try:
             while True:

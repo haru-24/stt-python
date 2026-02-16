@@ -21,5 +21,5 @@ def test_unicode_event() -> None:
 
 def test_type_text_import() -> None:
     """type_text関数がインポートできるか"""
-    from core.text_input import type_text
+    from app.engine import type_text
     assert callable(type_text)
