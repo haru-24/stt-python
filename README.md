@@ -5,15 +5,16 @@ macOS push-to-talk voice input tool. Hold right Command key to record, release t
 ## Requirements
 
 - macOS 10.14+
-- Python 3.8+
+- Python 3.10+
+- Poetry
 - Microphone and Accessibility permissions
 
 ## Installation
 
 ```bash
 git clone <repository-url>
-cd sst-python
-pip install -r requirements.txt
+cd stt-python
+poetry install
 ```
 
 Grant permissions: **System Settings > Privacy & Security > Accessibility**
@@ -21,7 +22,7 @@ Grant permissions: **System Settings > Privacy & Security > Accessibility**
 ## Usage
 
 ```bash
-python main.py
+poetry run python main.py
 ```
 
 **Voice Input**: Hold right Command → Speak → Release
@@ -69,15 +70,33 @@ main.py                # Entry point
 ## Development
 
 ```bash
-# Test
-python -m py_compile app/*.py ui/*.py main.py
-python main.py
+# Install dependencies
+poetry install
 
-# Style
+# Enter virtual environment
+poetry shell
+
+# Run the app
+poetry run python main.py
+
+# Syntax check
+poetry run python -m py_compile app/*.py main.py
+
+# Run tests
+poetry run python -m pytest test/ -v
+
+# Add a dependency
+poetry add <package>
+
+# Update dependencies
+poetry update
+```
+
+### Coding Conventions
+
 - Type hints required
 - PascalCase (classes), snake_case (functions)
-- Private members: _ prefix
-```
+- Private members: \_ prefix
 
 ## Troubleshooting
 

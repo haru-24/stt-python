@@ -1,3 +1,29 @@
+[tool.poetry]
+name = "stt-python"
+version = "0.1.0"
+description = "macOS用 Push-to-Talk 音声入力ツール"
+authors = []
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.15"
+faster-whisper = "*"
+sounddevice = "*"
+numpy = "*"
+pynput = "*"
+rumps = "*"
+pyobjc-framework-Cocoa = "*"
+pydantic = "*"
+python-dotenv = "*"
+google-genai = "*"
+pyobjc-framework-Quartz = "*"
+SpeechRecognition = "*"
+PyQt6 = "*"
+
+[tool.poetry.scripts]
+stt = "main:main"
+
 [tool.pyright]
 reportMissingModuleSource = false
 reportUnknownMemberType = false
