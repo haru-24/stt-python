@@ -25,6 +25,7 @@ from app.config import config
 from app.whisper import WhisperTranscriber
 from app.google_speech import GoogleSpeechTranscriber
 from app.gemini import GeminiCorrector
+from app.word_replacement import word_replacer
 
 # ログディレクトリとファイル設定
 LOG_DIR = Path.home() / ".sst-python" / "logs"
@@ -202,6 +203,11 @@ class VoiceInputEngine:
                 if corrected != text:
                     logger.info(f"[Gemini補正] {text} → {corrected}")
                 text = corrected
+
+            replaced = word_replacer.apply(text)
+            if replaced != text:
+                logger.info(f"[ワード変換] {text} → {replaced}")
+            text = replaced
 
             if text:
                 logger.info(f"[入力] {text}")

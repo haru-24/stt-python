@@ -42,3 +42,6 @@ env/
 
 # Logs
 *.log
+
+
+__generated__/

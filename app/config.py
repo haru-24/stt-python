@@ -54,7 +54,7 @@ class AppConfig(BaseModel):
         description="APIタイムアウト時間（秒）"
     )
     gemini_prompt_file: Path = Field(
-        default=Path(__file__).parent.parent / "config" / "prompts.json",
+        default=Path(__file__).parent.parent / "__generated__" / "prompts.json",
         description="プロンプト設定ファイルパス"
     )
     gemini_prompt: str = Field(default="", description="Gemini補正プロンプト")
