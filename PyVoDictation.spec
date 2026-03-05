@@ -3,6 +3,11 @@ import os, importlib.util
 
 def _pkg_dir(name):
     spec = importlib.util.find_spec(name)
+    if spec is None or spec.origin is None:
+        raise RuntimeError(
+            f"パッケージ '{name}' が見つかりません。\n"
+            f"'poetry install' を実行してから 'make build' で再試行してください。"
+        )
     return os.path.dirname(spec.origin)
 
 a = Analysis(

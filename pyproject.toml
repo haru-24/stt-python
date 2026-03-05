@@ -35,7 +35,6 @@ line-length = 100
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 
-[dependency-groups]
-dev = [
-    "pyinstaller (>=6.19.0,<7.0.0)"
-]
+[tool.poetry.group.dev.dependencies]
+pyinstaller = ">=6.19.0,<7.0.0"
+pillow = "^12.1.1"

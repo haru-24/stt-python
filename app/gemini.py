@@ -38,7 +38,7 @@ class GeminiCorrector:
             logger.debug("[Gemini] クライアントをリセットしました")
 
     def correct(self, text: str) -> str:
-        """Whisper出力をGemini APIで補正する"""
+        """音声認識テキストをGemini APIで補正する"""
         if not text.strip():
             return text
 
@@ -49,8 +49,6 @@ class GeminiCorrector:
             from google.genai import types
 
             client = self._get_client()
-
-            # configから動的にプロンプトを取得
             prompt = config.gemini_prompt.replace("{text}", text)
 
             response = client.models.generate_content(
@@ -59,6 +57,7 @@ class GeminiCorrector:
                 config=types.GenerateContentConfig(
                     temperature=0.3,
                     max_output_tokens=500,
+                    http_options=types.HttpOptions(timeout=config.gemini_timeout * 1000),
                 )
             )
 

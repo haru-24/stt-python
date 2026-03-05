@@ -109,11 +109,11 @@ class VoiceInputEngine:
 
     def start_keyboard_listener(self) -> keyboard.Listener:
         """キーボードリスナーを起動"""
-        def on_press(key: Union[Key, KeyCode, None]) -> None:
+        def on_press(key: Key | KeyCode | None) -> None:
             if key == config.hotkey:
                 self.start_recording()
 
-        def on_release(key: Union[Key, KeyCode, None]) -> None:
+        def on_release(key: Key | KeyCode | None) -> None:
             if key == config.hotkey:
                 if self.is_recording:
                     self.stop_recording()
